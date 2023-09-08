@@ -1,5 +1,7 @@
 # Changelog
-Latest update: May 9th 2023
+Latest update: September 9th 2023
+## Version 0.2.1
+- Add ability to update photo description
 ## Version 0.2
 ### Additions
 - Added a count for Photo.add_to_album_from_query() for a maximum count that are from the query, default is 1000000.

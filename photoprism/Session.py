@@ -1,19 +1,26 @@
 """Set up a session with the photoprism server"""
 
 import json
+import pprint
 from requests import Session as r_session, Request as r_request
 
-from photoprism import mimetypes
+from . import mimetypes
 
-class Session():
-    def __init__(self, username, password, host, use_https=False, verify_cert=True, user_agent=None):
+
+class Session:
+    def __init__(
+        self,
+        username,
+        password,
+        host,
+        use_https=False,
+        verify_cert=True,
+        user_agent=None,
+    ):
         """Initialize using a username, password and hostname"""
         self.username = username
         self.password = password
-        self.login_data = {
-            "username": self.username,
-            "password": self.password
-        }
+        self.login_data = {"username": self.username, "password": self.password}
 
         self.host = host
 
@@ -28,9 +35,7 @@ class Session():
         if user_agent:
             self.user_agent = user_agent
 
-        self.headers = {
-            "User-Agent": self.user_agent
-        }
+        self.headers = {"User-Agent": self.user_agent}
 
     def req(self, endpoint, method, stream=False, **kwargs):
         s = r_session()
@@ -48,6 +53,7 @@ class Session():
         for k, v in kwargs.items():
             if k == "data":
                 r.data = json.dumps(v)
+                r.headers["Content-type"] = "application/json"
 
         p = r.prepare()
         resp = s.send(p, stream=stream)
@@ -61,8 +67,10 @@ class Session():
             if mime_subtype == "json":
                 data_out = json.loads(resp.text)
             elif mime_subtype == "zip":
-                filename = self.determine_filename(kwargs, mime_type, mime_subtype, headers)
-                with open(filename, 'wb') as f:
+                filename = self.determine_filename(
+                    kwargs, mime_type, mime_subtype, headers
+                )
+                with open(filename, "wb") as f:
                     for chunk in resp.iter_content(chunk_size=10240):
                         f.write(chunk)
                 data_out = True
@@ -88,7 +96,7 @@ class Session():
         _, data = self.req("/session", "POST", data=self.login_data)
         self.session_id = data["id"]
         self.headers["X-Session-ID"] = self.session_id
-        self.download_token = data['config']['downloadToken']
+        self.download_token = data["config"]["downloadToken"]
 
         return True
 
@@ -97,12 +105,14 @@ class Session():
             extension = mimetypes.type[mime_type][mime_subtype]
             filename = f"{args['filename']}{extension}"
         else:
-            header_filename = headers["Content-Disposition"].split("; ")[1].split("=")[1]
+            header_filename = (
+                headers["Content-Disposition"].split("; ")[1].split("=")[1]
+            )
             # Sometimes the filename in the header is enclosed, sometimes it isn't. This is to account for that.
             if header_filename[0] == '"' and header_filename[-1:] == '"':
                 filename = header_filename[1:-1]
             else:
-                filename=header_filename
+                filename = header_filename
 
         if "path" in args:
             filename = f"{args['path']}/{filename}"

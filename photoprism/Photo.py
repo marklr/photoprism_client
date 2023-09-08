@@ -1,20 +1,26 @@
 """Interaction with the API of PhotoPrism"""
 import uuid
 
-from photoprism import Session
+from . import Session
 import requests, json
 
-class Photo():
+
+class Photo:
     def __init__(self, session):
         """Initialize based upon a session"""
         if type(session) != Session.Session:
-            raise TypeError(f"session variable is not of type photoprism.Session.Session, but {type(session)}")
+            raise TypeError(
+                f"session variable is not of type photoprism.Session.Session, but {type(session)}"
+            )
 
         self.session = session
 
     def search(self, query, count=100, offset=0, order="newest"):
         """Basic search function. Returns a Dict object based upon the returned JSON"""
-        _, data = self.session.req(f"/photos?count={count}&q={query}&offset={offset}&order={order}", "GET")
+        _, data = self.session.req(
+            f"/photos?count={count}&q={query}&offset={offset}&order={order}&merged=true&primary=true",
+            "GET",
+        )
         return data
 
     def get_uid_list_of_search(self, query, count=100, offset=0, order="newest"):
@@ -53,36 +59,40 @@ class Photo():
         for d in data:
             if name == d["Title"]:
                 return d["UID"]
-        
+
         return False
 
     def create_album(self, title):
         """Create an album, returns a boolean if it worked"""
-        data = {"Title":title,"Favorite":False}
+        data = {"Title": title, "Favorite": False}
         status_code, output = self.session.req("/albums", "POST", data=data)
 
         if status_code == 200:
             return output
-        
+
         return False
 
     def add_photos_to_album(self, photos, album_uid):
         """Add photos to an album, you will need to provide a list of UIDs of the photos you want to add. Returns True if successfull"""
-        data = {
-            "photos":photos
-        }
-        status_code, _ = self.session.req(f"/albums/{album_uid}/photos", "POST", data=data)
+        data = {"photos": photos}
+        status_code, _ = self.session.req(
+            f"/albums/{album_uid}/photos", "POST", data=data
+        )
         if status_code == 200:
             return True
 
         return False
 
-    def add_to_album_from_query(self, query, albumname, count=1000000, offset=0, order="newest"):
+    def add_to_album_from_query(
+        self, query, albumname, count=1000000, offset=0, order="newest"
+    ):
         """Provide a search query and add all photos that are returned into an album. Provide the albumname, not the UID of the album."""
 
         self.check_if_album_exists(albumname, create_if_not=True)
         album_uid = self.get_album_uid_by_name(albumname)
-        photolist = self.get_uid_list_of_search(query, count=count, offset=offset, order=order)
+        photolist = self.get_uid_list_of_search(
+            query, count=count, offset=offset, order=order
+        )
         result = self.add_photos_to_album(photolist, album_uid)
         return result
 
@@ -98,13 +108,13 @@ class Photo():
         """Remove photos from an album, Returns True if successfull"""
         album_uid = self.get_album_uid_by_name(albumname)
         if photos == False:
-            query = f"album:\"{albumname}\""
-            photos = self.get_uid_list_of_search(query,count=count)
+            query = f'album:"{albumname}"'
+            photos = self.get_uid_list_of_search(query, count=count)
 
-        data = {
-            "photos":photos
-        }
-        status_code, _ = self.session.req(f"/albums/{album_uid}/photos", "DELETE", data=data)
+        data = {"photos": photos}
+        status_code, _ = self.session.req(
+            f"/albums/{album_uid}/photos", "DELETE", data=data
+        )
         if status_code == 200:
             return True
 
@@ -125,14 +135,11 @@ class Photo():
 
     def start_import(self, path="upload", move=False):
         """Start an import job, default path is upload. It returns True when the import started, not when finished"""
-        data = {
-            "path": path,
-            "move": move
-        }
+        data = {"path": path, "move": move}
         status_code, _ = self.session.req(f"/import", "POST", data=data)
         if status_code == 200:
             return True
-        
+
         return False
 
     def stop_import(self):
@@ -140,12 +147,14 @@ class Photo():
         status_code, _ = self.session.req("/import", "DELETE")
         if status_code == 200:
             return True
-        
+
         return False
 
     def download_file(self, hash, path=".", filename=None):
         """Download a single file"""
-        status_code, data = self.session.req(f"/dl/{hash}", "GET", path=path, filename=filename)
+        status_code, data = self.session.req(
+            f"/dl/{hash}", "GET", path=path, filename=filename
+        )
 
         if status_code == 200:
             return True
@@ -153,10 +162,31 @@ class Photo():
 
     def download_album(self, uid, path=".", filename=None):
         """Download an entire album as ZIP"""
-        status_code, data = self.session.req(f"/albums/{uid}/dl", "GET", stream=True, path=path, filename=filename)
+        status_code, data = self.session.req(
+            f"/albums/{uid}/dl", "GET", stream=True, path=path, filename=filename
+        )
 
         if status_code == 200:
             return True
+        return False
+
+    def update_photo_description(self, uid, description):
+        data = {"Description": description, "DescriptionSrc": "manual"}
+        return self.session.req(f"/photos/{uid}", "PUT", data=data)
+
+    def update_photo_description_and_keywords(self, photo, description, keywords):
+        data = {}
+        if description:
+            data["Description"] = description
+            data["DescriptionSrc"] = "image"
+        if keywords:
+            data["Details"] = photo["Details"] if "Details" in photo else {}
+            data["PhotoID"] = photo["ID"]
+            data["Details"].update({"Keywords": keywords, "KeywordsSrc": ""})
+
+        if data:
+            return self.session.req(f"/photos/{photo['UID']}", "PUT", data=data)
+
         return False
 
     def download_files_from_query(self, query, count=100, offset=0, order="newest"):
@@ -166,11 +196,9 @@ class Photo():
         # After the download is complete, the folder is removed.
 
         temp_album = self.create_album(str(uuid.uuid4()))
-        status = self.add_to_album_from_query(query, temp_album["Title"], count=count, offset=offset, order=order)
+        status = self.add_to_album_from_query(
+            query, temp_album["Title"], count=count, offset=offset, order=order
+        )
         status = self.download_album(temp_album["UID"])
         status = self.remove_album_uid(temp_album["UID"])
         return status
-
-
-
-

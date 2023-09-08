@@ -8,17 +8,15 @@ type = {
         "bmp": ".bmp",
         "gif": ".gif",
         "svg+xml": ".svg",
-        "tiff": ".tff"
+        "tiff": ".tff",
     },
-    "application": {
-        "zip": ".zip"
-    },
+    "application": {"zip": ".zip"},
     "video": {
         "mp4": ".mp4",
         "mpeg": ".mpeg",
         "ogg": ".ogv",
         "mp2t": ".ts",
         "webm": ".webm",
-        "3gpp": ".3gp"
-    }
+        "3gpp": ".3gp",
+    },
 }

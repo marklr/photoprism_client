@@ -4,13 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "photoprism_client"
-version = "0.2.1"
+version = "0.2.2"
 authors = [
   { name="mvlnetdev", email="maartenvanleeuwen1996@gmail.com" },
+  { name="marklr", email="928414+marklr@users.noreply.github.com"}
 ]
 description = "A Python client to interact with photoprism."
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -23,7 +24,7 @@ keywords = ["photoprism", "client", "api"]
 
 
 [project.urls]
-"Homepage" = "https://github.com/mvlnetdev/photoprism_client"
-"Bug Tracker" = "https://github.com/mvlnetdev/photoprism_client/issues"
-"documentation" = "https://github.com/mvlnetdev/photoprism_client/blob/main/README.md"
-"changelog" = "https://github.com/mvlnetdev/photoprism_client/blob/main/changelog.md"
+"Homepage" = "https://github.com/marklr/photoprism_client"
+"Bug Tracker" = "https://github.com/marklr/photoprism_client/issues"
+"documentation" = "https://github.com/marklr/photoprism_client/blob/main/README.md"
+"changelog" = "https://github.com/marklr/photoprism_client/blob/main/changelog.md"

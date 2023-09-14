@@ -181,7 +181,7 @@ class Photo:
             data["DescriptionSrc"] = "image"
         if keywords:
             data["Details"] = photo["Details"] if "Details" in photo else {}
-            data["PhotoID"] = photo["ID"]
+            data["PhotoID"] = str(photo["ID"]).split('-')[0]
             data["Details"].update({"Keywords": keywords, "KeywordsSrc": "manual"})
 
         if data:

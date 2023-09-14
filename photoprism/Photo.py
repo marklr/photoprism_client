@@ -181,8 +181,13 @@ class Photo:
             data["DescriptionSrc"] = "image"
         if keywords:
             data["Details"] = photo["Details"] if "Details" in photo else {}
-            data["PhotoID"] = int(str(photo["ID"]).split('-')[0])
-            data["Details"].update({"Keywords": keywords, "KeywordsSrc": ""})
+            data["Details"].update(
+                {
+                    "PhotoID": int(str(photo["ID"]).split("-")[0]),
+                    "Keywords": keywords,
+                    "KeywordsSrc": "",
+                }
+            )
 
         if data:
             return self.session.req(f"/photos/{photo['UID']}", "PUT", data=data)

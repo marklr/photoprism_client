@@ -102,7 +102,7 @@ class Session:
 
     def determine_filename(self, args, mime_type, mime_subtype, headers):
         if args["filename"] != None:
-            extension = mimetypes.type[mime_type][mime_subtype]
+            extension = mimetypes.type.get(mime_type, {}).get(mime_subtype, ".bin")
             filename = f"{args['filename']}{extension}"
         else:
             header_filename = (
